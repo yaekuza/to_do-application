@@ -1,0 +1,63 @@
+TakenHandelaar — leftover work
+===============================
+
+Done so far
+-----------
+- Root README + .gitignore
+- supabase/schema.sql (profiles, categories, tasks + RLS + signup trigger)
+- supabase/README.md (project setup, Google/Discord OAuth steps)
+- backend/ Go API: main.go, config, pgx pool, CORS + JWT middleware,
+  handlers for profile / categories / tasks, .env.example, go.mod
+- frontend/ scaffold: Vite config, package.json, index.html, main.jsx, App.jsx
+- frontend/ auth: supabase client, fetch wrapper, AuthContext, ProtectedRoute
+- frontend/ login + signup page (Auth.jsx) — yaetype-inspired, neon purple
+- frontend/ AppShell with Teams-style icon rail + topbar styles
+- frontend/ Modal component
+- frontend/ calendar bits: date helpers, MiniCalendar, WeekView
+- frontend/ styles: tokens, globals, auth, shell, calendar
+
+Still to build
+--------------
+1. frontend/src/components/calendar/TaskModal.jsx
+   - Title, description, category dropdown, start/end datetime-local,
+     deadline, priority (low/medium/high), status (open/done)
+   - Submit -> api.tasks.create / api.tasks.update
+   - Delete button on edit
+
+2. frontend/src/pages/CalendarPage.jsx
+   - State: selected date, week start (derived), tasks, categories
+   - Fetch tasks for the week via api.tasks.list({ from, to })
+   - Render: aside (MiniCalendar + category toggles) + topbar (today /
+     prev / next / week range / "new task" button) + <WeekView />
+   - Open <TaskModal /> on event click + on double-click empty slot
+
+3. frontend/src/pages/CategoriesPage.jsx
+   - Grid/list of categories (name + colored swatch)
+   - "Add category" form (name + color picker from preset palette)
+   - Edit / delete actions
+   - frontend/src/styles/categories.css already imported — fill it in
+
+4. frontend/src/pages/ProfilePage.jsx
+   - Show avatar + display_name + email (from session)
+   - Editable fields: username, display_name, bio, avatar_url
+   - Sign-out button (already in rail, but a big one here is fine)
+   - frontend/src/styles/profile.css already imported — fill it in
+
+5. Verify it boots
+   - backend:  cd backend && go mod tidy && go build ./...
+   - frontend: cd frontend && npm install && npm run build
+
+Notes for whoever picks this up
+-------------------------------
+- Stick to the design tokens in src/styles/tokens.css.
+  Avoid box-shadow glows and gradient overlays — the user explicitly
+  asked for a flat, soft, neon-purple-on-black look.
+- The Go API path-value routing needs Go 1.22+ (uses
+  mux.HandleFunc("GET /tasks/{id}", ...)).
+- Supabase JWT is HS256 signed with SUPABASE_JWT_SECRET; the backend
+  reads the "sub" claim as the user id and trusts it for all writes.
+  RLS is on as a second line of defense.
+- OAuth redirect URL to register in both Google Cloud and Discord:
+  https://<project-ref>.supabase.co/auth/v1/callback
+  Site URL in Supabase: http://localhost:5173
+  Redirect URLs in Supabase: http://localhost:5173/auth/callback
