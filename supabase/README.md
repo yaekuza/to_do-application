@@ -25,15 +25,48 @@ This creates three tables (`profiles`, `categories`, `tasks`), enables Row Level
 
 ## 3. Collect the keys you will need
 
-Go to **Project Settings → API** and copy:
+You need four values from the Supabase dashboard. Copy each one into the matching `.env` file (create the files first: `cp .env.example .env` in both `backend/` and `frontend/`).
 
-| Value | Where it goes |
-|---|---|
-| `Project URL`           | `frontend/.env` as `VITE_SUPABASE_URL` |
-| `anon` public key       | `frontend/.env` as `VITE_SUPABASE_ANON_KEY` |
-| `JWT Secret` (under JWT Settings) | `backend/.env` as `SUPABASE_JWT_SECRET` |
+> **Finding the settings page:** click the **gear icon** (⚙️) in the left sidebar, or look for **Project Settings** at the bottom of the sidebar. The exact label depends on your dashboard version.
 
-Go to **Project Settings → Database → Connection string → URI** and copy that into `backend/.env` as `DATABASE_URL`. Replace `[YOUR-PASSWORD]` with the DB password you set in step 1.
+### 3a. Project URL + anon key → `frontend/.env`
+
+1. Go to **Project Settings** → look for **Data API** (older dashboards call it just **API**).
+2. At the top you'll see **Project URL** — copy it into `VITE_SUPABASE_URL`.
+3. Under **Project API keys**, find the key labelled `anon` / `public` — copy it into `VITE_SUPABASE_ANON_KEY`.
+
+```
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+VITE_API_URL=http://localhost:8080
+```
+
+### 3b. JWT Secret → `backend/.env`
+
+1. On the same **Data API** (or **API**) page, scroll down to the **JWT Settings** section.
+2. Copy the **JWT Secret** into `SUPABASE_JWT_SECRET`.
+
+### 3c. Database connection string → `backend/.env`
+
+1. Still in **Project Settings**, click **Database** in the left sub-menu.
+2. Look for **Connection string** (it may be under a "Connection info" or "Connection Pooling" panel, depending on your dashboard version).
+3. Select the **URI** tab and copy the string. It looks like:
+   ```
+   postgresql://postgres.[project-ref]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
+   ```
+4. Replace `[YOUR-PASSWORD]` with the database password you chose in step 1.
+5. Paste it as `DATABASE_URL` in `backend/.env`.
+
+> **Tip — can't find the password?** You can reset it on the same Database settings page under **Database Password**. If you reset it, update your `.env` to match.
+
+Your final `backend/.env` should look like:
+
+```
+DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-0-...pooler.supabase.com:6543/postgres
+SUPABASE_JWT_SECRET=your-jwt-secret-here
+FRONTEND_ORIGIN=http://localhost:5173
+PORT=8080
+```
 
 ---
 
