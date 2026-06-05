@@ -42,6 +42,7 @@ func main() {
 	handlers.RegisterProfile(api, pool)
 	handlers.RegisterCategories(api, pool)
 	handlers.RegisterTasks(api, pool)
+	handlers.RegisterNotes(api, pool)
 
 	authed := middleware.RequireAuth(cfg.JWTSecret, api)
 	mux.Handle("/api/", http.StripPrefix("/api", authed))

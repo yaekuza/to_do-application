@@ -14,6 +14,12 @@ func RegisterProfile(mux *http.ServeMux, pool *pgxpool.Pool) {
 		uid := middleware.UserID(r.Context())
 		var p models.Profile
 		err := pool.QueryRow(r.Context(),
+			`insert into profiles (id) values ($1)
+			 on conflict (id) do nothing;`, uid,
+		).Scan()
+		_ = err
+
+		err = pool.QueryRow(r.Context(),
 			`select id, username, display_name, avatar_url, bio, created_at, updated_at
 			 from profiles where id = $1`, uid,
 		).Scan(&p.ID, &p.Username, &p.DisplayName, &p.AvatarURL, &p.Bio, &p.CreatedAt, &p.UpdatedAt)
@@ -38,13 +44,14 @@ func RegisterProfile(mux *http.ServeMux, pool *pgxpool.Pool) {
 		}
 		var p models.Profile
 		err := pool.QueryRow(r.Context(),
-			`update profiles set
-				username     = coalesce($2, username),
-				display_name = coalesce($3, display_name),
-				avatar_url   = coalesce($4, avatar_url),
-				bio          = coalesce($5, bio),
+			`insert into profiles (id, username, display_name, avatar_url, bio)
+			 values ($1, $2, $3, $4, $5)
+			 on conflict (id) do update set
+				username     = excluded.username,
+				display_name = excluded.display_name,
+				avatar_url   = excluded.avatar_url,
+				bio          = excluded.bio,
 				updated_at   = now()
-			 where id = $1
 			 returning id, username, display_name, avatar_url, bio, created_at, updated_at`,
 			uid, in.Username, in.DisplayName, in.AvatarURL, in.Bio,
 		).Scan(&p.ID, &p.Username, &p.DisplayName, &p.AvatarURL, &p.Bio, &p.CreatedAt, &p.UpdatedAt)

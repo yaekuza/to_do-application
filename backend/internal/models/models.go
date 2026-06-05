@@ -33,3 +33,14 @@ type Task struct {
 	Status      string     `json:"status"`
 	CreatedAt   time.Time  `json:"created_at"`
 }
+
+type Note struct {
+	ID         string    `json:"id"`
+	UserID     string    `json:"user_id"`
+	CategoryID *string   `json:"category_id"`
+	Title      string    `json:"title"`
+	Body       string    `json:"body"`
+	Pinned     bool      `json:"pinned"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
