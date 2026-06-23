@@ -1,0 +1,16 @@
+<h2>Confirm your TakenHandelaar account</h2>
+
+<p>Hi{{ if .Data.display_name }} {{ .Data.display_name }}{{ end }},</p>
+
+<p>
+  Welcome to TakenHandelaar. Confirm your email address to start planning your
+  study tasks, notes, and weekly calendar.
+</p>
+
+<p>
+  <a href="{{ .ConfirmationURL }}">Confirm my account</a>
+</p>
+
+<p>
+  If you did not create this account, you can safely ignore this email.
+</p>

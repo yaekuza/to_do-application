@@ -118,12 +118,12 @@ func RegisterTasks(mux *http.ServeMux, pool *pgxpool.Pool) {
 		var t models.Task
 		err := pool.QueryRow(r.Context(),
 			`update tasks set
-				category_id = coalesce($3, category_id),
+				category_id = $3,
 				title       = coalesce($4, title),
-				description = coalesce($5, description),
-				start_time  = coalesce($6, start_time),
-				end_time    = coalesce($7, end_time),
-				deadline    = coalesce($8, deadline),
+				description = $5,
+				start_time  = $6,
+				end_time    = $7,
+				deadline    = $8,
 				priority    = coalesce($9, priority),
 				status      = coalesce($10, status)
 			 where id = $1 and user_id = $2

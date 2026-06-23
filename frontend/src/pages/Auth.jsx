@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useLayoutEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { supabaseConfig } from '../lib/supabase.js';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -14,17 +16,51 @@ const DiscordIcon = () => (
   </svg>
 );
 
-export default function Auth({ mode }) {
+const ArrowIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14M12 5l7 7-7 7" />
+  </svg>
+);
+
+function authErrorMessage(err) {
+  const raw = err?.message ?? String(err);
+  if (!supabaseConfig.isConfigured) {
+    return 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to frontend/.env, then restart the dev server.';
+  }
+  if (/failed to fetch|fetch failed|networkerror/i.test(raw)) {
+    return 'Cannot reach Supabase Auth. Check that VITE_SUPABASE_URL points to an active Supabase project, your internet/DNS works, and then restart the dev server.';
+  }
+  return raw;
+}
+
+export default function Auth() {
   const navigate = useNavigate();
   const { session, signInWithPassword, signUpWithPassword, signInWithOAuth } = useAuth();
 
+  const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const nicknameRef = useRef(null);
 
-  if (session) {
+  useLayoutEffect(() => {
+    if (!nicknameRef.current) return;
+    if (mode === 'signup') {
+      gsap.fromTo(
+        nicknameRef.current,
+        { height: 0, opacity: 0, y: -8 },
+        { height: 'auto', opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' },
+      );
+    } else {
+      gsap.to(nicknameRef.current, { height: 0, opacity: 0, y: -8, duration: 0.22, ease: 'power2.in' });
+    }
+  }, [mode]);
+
+  if (session && !leaving) {
     return <Navigate to="/calendar" replace />;
   }
 
@@ -35,17 +71,18 @@ export default function Auth({ mode }) {
     setBusy(true);
     try {
       if (mode === 'signup') {
-        const { error: err } = await signUpWithPassword(email, password);
+        const { error: err } = await signUpWithPassword(email, password, nickname.trim());
         if (err) throw err;
         setInfo('Check your email to confirm — or sign in directly if confirmations are off.');
+        setBusy(false);
       } else {
         const { error: err } = await signInWithPassword(email, password);
         if (err) throw err;
-        navigate('/calendar', { replace: true });
+        setLeaving(true);
+        setTimeout(() => navigate('/calendar', { replace: true }), 180);
       }
     } catch (err) {
-      setError(err.message ?? String(err));
-    } finally {
+      setError(authErrorMessage(err));
       setBusy(false);
     }
   };
@@ -56,68 +93,110 @@ export default function Auth({ mode }) {
       const { error: err } = await signInWithOAuth(provider);
       if (err) throw err;
     } catch (err) {
-      setError(err.message ?? String(err));
+      setError(authErrorMessage(err));
     }
   };
 
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setError(null);
+    setInfo(null);
+  };
+
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <div className="mark">T</div>
-          <div className="name">takenhandelaar</div>
+    <div className={`auth-split ${leaving ? 'auth-leaving' : ''}`}>
+      <div className="auth-left">
+        <div className="auth-left-inner">
+          <div className="auth-hero">
+            <h1 className="auth-title">GET STARTED</h1>
+            <p className="auth-subtitle">
+              Plan your school work. Stay on track.
+            </p>
+          </div>
+
+          <div className="auth-tabs">
+            <button
+              type="button"
+              className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
+              onClick={() => switchMode('login')}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              className={`auth-tab ${mode === 'signup' ? 'active' : ''}`}
+              onClick={() => switchMode('signup')}
+            >
+              Sign up
+            </button>
+          </div>
+
+          <form className="auth-form" onSubmit={submit}>
+            <div ref={nicknameRef} className="auth-field auth-nickname" aria-hidden={mode !== 'signup'}>
+              <label className="auth-label">Nickname</label>
+              <input
+                className="auth-input"
+                type="text"
+                placeholder="what should we call you?"
+                autoComplete="nickname"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                required={mode === 'signup'}
+              />
+            </div>
+            <div className="auth-field">
+              <label className="auth-label">Email</label>
+              <input
+                className="auth-input"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="auth-field">
+              <label className="auth-label">Password</label>
+              <input
+                className="auth-input"
+                type="password"
+                placeholder="min. 6 characters"
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+
+            {error && <div className="auth-error">{error}</div>}
+            {!supabaseConfig.isConfigured && (
+              <div className="auth-error">
+                Supabase env values are missing. Fill in frontend/.env with your Project URL and Publishable key, then restart Vite.
+              </div>
+            )}
+            {info && <div className="auth-info">{info}</div>}
+
+            <button type="submit" className="auth-submit" disabled={busy || leaving}>
+              {busy ? <span className="auth-spinner" /> : <span>{mode === 'signup' ? 'Create account' : 'Sign in'}</span>}
+              {!busy && <ArrowIcon />}
+            </button>
+          </form>
+
+          <div className="auth-divider"><span>or continue with</span></div>
+
+          <div className="auth-providers">
+            <button type="button" className="provider-btn" onClick={() => oauth('google')}>
+              <GoogleIcon />
+              <span>Google</span>
+            </button>
+            <button type="button" className="provider-btn" onClick={() => oauth('discord')}>
+              <DiscordIcon />
+              <span>Discord</span>
+            </button>
+          </div>
         </div>
-
-        <div className="auth-tabs">
-          <Link to="/login" className={`auth-tab ${mode === 'login' ? 'active' : ''}`}>
-            log in
-          </Link>
-          <Link to="/signup" className={`auth-tab ${mode === 'signup' ? 'active' : ''}`}>
-            sign up
-          </Link>
-        </div>
-
-        <div className="auth-providers">
-          <button type="button" className="provider-btn" onClick={() => oauth('google')}>
-            <span className="icon"><GoogleIcon /></span>
-            continue with google
-          </button>
-          <button type="button" className="provider-btn" onClick={() => oauth('discord')}>
-            <span className="icon"><DiscordIcon /></span>
-            continue with discord
-          </button>
-        </div>
-
-        <div className="auth-divider"><span>or</span></div>
-
-        <form className="auth-form" onSubmit={submit}>
-          <input
-            className="auth-input"
-            type="email"
-            placeholder="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            className="auth-input"
-            type="password"
-            placeholder="password"
-            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-
-          {error && <div className="auth-error">{error}</div>}
-          {info && <div className="auth-info">{info}</div>}
-
-          <button type="submit" className="auth-submit" disabled={busy}>
-            {busy ? '…' : mode === 'signup' ? 'sign up' : 'log in'}
-          </button>
-        </form>
       </div>
     </div>
   );

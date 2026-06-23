@@ -47,10 +47,10 @@ func RegisterProfile(mux *http.ServeMux, pool *pgxpool.Pool) {
 			`insert into profiles (id, username, display_name, avatar_url, bio)
 			 values ($1, $2, $3, $4, $5)
 			 on conflict (id) do update set
-				username     = excluded.username,
-				display_name = excluded.display_name,
-				avatar_url   = excluded.avatar_url,
-				bio          = excluded.bio,
+				username     = coalesce(excluded.username, profiles.username),
+				display_name = coalesce(excluded.display_name, profiles.display_name),
+				avatar_url   = coalesce(excluded.avatar_url, profiles.avatar_url),
+				bio          = coalesce(excluded.bio, profiles.bio),
 				updated_at   = now()
 			 returning id, username, display_name, avatar_url, bio, created_at, updated_at`,
 			uid, in.Username, in.DisplayName, in.AvatarURL, in.Bio,

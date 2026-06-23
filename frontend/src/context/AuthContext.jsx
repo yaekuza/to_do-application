@@ -33,11 +33,18 @@ export function AuthProvider({ children }) {
       loading,
       signInWithPassword: (email, password) =>
         supabase.auth.signInWithPassword({ email, password }),
-      signUpWithPassword: (email, password) =>
+      signUpWithPassword: (email, password, nickname = '') =>
         supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              display_name: nickname,
+              full_name: nickname,
+              username: nickname,
+            },
+          },
         }),
       signInWithOAuth: (provider) =>
         supabase.auth.signInWithOAuth({

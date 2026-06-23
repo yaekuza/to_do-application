@@ -9,7 +9,9 @@ import './styles/globals.css';
 import './styles/auth.css';
 import './styles/shell.css';
 import './styles/calendar.css';
-import './styles/categories.css';
+import './styles/dashboard.css';
+import './styles/notes.css';
+import './styles/settings.css';
 import './styles/profile.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(

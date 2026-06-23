@@ -17,9 +17,9 @@ You need a Supabase account (free tier is enough): https://supabase.com.
 ## 2. Run the schema
 
 1. In the dashboard, go to **SQL Editor → New query**.
-2. Open [`schema.sql`](schema.sql) in this folder, paste the whole file into the editor, and click **Run**.
+2. Open [`full_setup.sql`](full_setup.sql) in this folder, paste the whole file into the editor, and click **Run**.
 
-This creates three tables (`profiles`, `categories`, `tasks`), enables Row Level Security, and adds a trigger so a `profiles` row is created automatically whenever someone signs up.
+This creates the `profiles`, `categories`, `tasks`, and `notes` tables, enables Row Level Security, adds grants for logged-in users, and adds a trigger so a `profiles` row is created automatically whenever someone signs up.
 
 ---
 
@@ -29,16 +29,16 @@ You need four values from the Supabase dashboard. Copy each one into the matchin
 
 > **Finding the settings page:** click the **gear icon** (⚙️) in the left sidebar, or look for **Project Settings** at the bottom of the sidebar. The exact label depends on your dashboard version.
 
-### 3a. Project URL + anon key → `frontend/.env`
+### 3a. Project URL + publishable key → `frontend/.env`
 
-1. Go to **Project Settings** → look for **Data API** (older dashboards call it just **API**).
-2. At the top you'll see **Project URL** — copy it into `VITE_SUPABASE_URL`.
-3. Under **Project API keys**, find the key labelled `anon` / `public` — copy it into `VITE_SUPABASE_ANON_KEY`.
+1. Open the project's **Connect** dialog or go to **Project Settings** → **API Keys**.
+2. Copy the **Project URL** into `VITE_SUPABASE_URL`.
+3. Copy the **Publishable key** (`sb_publishable_...`) into `VITE_SUPABASE_PUBLISHABLE_KEY`.
+4. Do not put a **Secret key** (`sb_secret_...`) in the frontend.
 
 ```
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
-VITE_API_URL=http://localhost:8080
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 ### 3b. JWT Secret → `backend/.env`
@@ -96,6 +96,17 @@ In **Authentication → URL Configuration**:
 - **Redirect URLs:** add `http://localhost:5173/auth/callback`
 
 When you deploy, add the production URLs here too.
+
+---
+
+## 7. Customize the confirmation email
+
+In **Authentication → Email Templates**, open **Confirm signup**.
+
+- Subject: `Confirm your TakenHandelaar account`
+- Body: paste the contents of [`email_confirmation_template.html`](email_confirmation_template.html)
+
+Supabase email templates are not configured through SQL. They use Supabase Auth's email template editor.
 
 ---
 

@@ -10,7 +10,7 @@ import {
 
 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-export default function MiniCalendar({ month, onMonthChange, selected, onSelect }) {
+export default function MiniCalendar({ month, onMonthChange, selected, onSelect, tasks = [] }) {
   const cells = useMemo(() => {
     const first = new Date(month.getFullYear(), month.getMonth(), 1);
     const gridStart = startOfWeek(first);
@@ -21,6 +21,17 @@ export default function MiniCalendar({ month, onMonthChange, selected, onSelect 
 
   const weekStart = startOfWeek(selected);
   const today = startOfDay(new Date());
+  const counts = useMemo(() => {
+    const out = new Map();
+    for (const task of tasks) {
+      const ref = task.deadline || task.start_time;
+      if (!ref) continue;
+      const d = new Date(ref);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      out.set(key, (out.get(key) || 0) + 1);
+    }
+    return out;
+  }, [tasks]);
 
   return (
     <div className="mini-cal">
@@ -48,7 +59,8 @@ export default function MiniCalendar({ month, onMonthChange, selected, onSelect 
           const isOtherMonth = d.getMonth() !== month.getMonth();
           const isToday = sameDay(d, today);
           const isSelected = sameDay(d, selected);
-          const inWeek = d >= weekStart && d < addDays(weekStart, 5);
+          const inWeek = d >= weekStart && d < addDays(weekStart, 7);
+          const count = counts.get(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`) || 0;
           const cls = [
             'mini-cal-day',
             isOtherMonth && 'muted',
@@ -60,7 +72,8 @@ export default function MiniCalendar({ month, onMonthChange, selected, onSelect 
             .join(' ');
           return (
             <button key={i} className={cls} onClick={() => onSelect(d)}>
-              {d.getDate()}
+              <span>{d.getDate()}</span>
+              {count > 0 && <em>{count > 9 ? '9+' : count}</em>}
             </button>
           );
         })}

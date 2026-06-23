@@ -80,7 +80,7 @@ select {
 .btn.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #110014;
+  color: var(--bg);
   font-weight: 600;
 }
 .btn.primary:hover {
@@ -96,7 +96,7 @@ select {
 }
 .btn.danger:hover {
   border-color: var(--danger);
-  background: rgba(248, 113, 113, 0.08);
+  background: var(--accent-soft);
 }
 
 .input,
@@ -142,3 +142,64 @@ select {
 
 .muted { color: var(--text-dim); }
 .dim   { color: var(--text-mute); }
+
+/* ============ shared button classes ============ */
+.btn-accent {
+  padding: 8px 16px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+.btn-accent:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.btn-accent:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn-ghost {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+.btn-ghost:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.btn-danger {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  color: var(--danger);
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-danger:hover {
+  background: var(--accent-soft);
+}
+
+.save-ok {
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 500;
+}
+.save-err {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 500;
+}

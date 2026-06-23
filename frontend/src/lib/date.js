@@ -40,7 +40,7 @@ export function fmtMonthYear(d) {
 }
 
 export function fmtWeekRange(start) {
-  const end = addDays(start, 4);
+  const end = addDays(start, 6);
   const sameMonth = start.getMonth() === end.getMonth();
   const left = start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   const right = sameMonth

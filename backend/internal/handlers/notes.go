@@ -78,7 +78,7 @@ func RegisterNotes(mux *http.ServeMux, pool *pgxpool.Pool) {
 		var n models.Note
 		err := pool.QueryRow(r.Context(),
 			`update notes set
-				category_id = coalesce($3, category_id),
+				category_id = $3,
 				title       = coalesce($4, title),
 				body        = coalesce($5, body),
 				pinned      = coalesce($6, pinned),

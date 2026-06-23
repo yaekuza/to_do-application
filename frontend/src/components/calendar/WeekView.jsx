@@ -1,129 +1,89 @@
 import { useMemo } from 'react';
-import { addDays, sameDay, startOfDay } from '../../lib/date.js';
+import { addDays, fmtTime, sameDay, startOfDay } from '../../lib/date.js';
 
-const DAY_NAMES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const HOURS = Array.from({ length: 14 }, (_, i) => i + 7); // 7am–8pm
-const SLOT_H = 56;
-const START_HOUR = HOURS[0];
+const DAY_NAMES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 function bucketByDay(tasks, weekStart) {
-  const buckets = Array.from({ length: 5 }, () => []);
-  for (const t of tasks) {
-    const ref = t.start_time ?? t.deadline;
+  const buckets = Array.from({ length: DAY_NAMES.length }, () => []);
+  for (const task of tasks) {
+    const ref = task.deadline || task.start_time;
     if (!ref) continue;
-    const d = new Date(ref);
-    for (let i = 0; i < 5; i++) {
-      if (sameDay(d, addDays(weekStart, i))) {
-        buckets[i].push(t);
+    const deadline = new Date(ref);
+    for (let i = 0; i < DAY_NAMES.length; i += 1) {
+      if (sameDay(deadline, addDays(weekStart, i))) {
+        buckets[i].push(task);
         break;
       }
     }
   }
-  return buckets;
+
+  return buckets.map((items) => [...items].sort(compareUrgency));
 }
 
-function positionFor(task) {
-  const start = task.start_time ? new Date(task.start_time) : new Date(task.deadline);
-  const end = task.end_time
-    ? new Date(task.end_time)
-    : new Date(start.getTime() + 60 * 60 * 1000);
-  const startHours = start.getHours() + start.getMinutes() / 60;
-  const endHours = end.getHours() + end.getMinutes() / 60;
-  const top = (startHours - START_HOUR) * SLOT_H;
-  const height = Math.max(24, (endHours - startHours) * SLOT_H);
-  return { top, height };
+function compareUrgency(a, b) {
+  if (a.status === 'done' && b.status !== 'done') return 1;
+  if (a.status !== 'done' && b.status === 'done') return -1;
+  return new Date(a.deadline || a.created_at) - new Date(b.deadline || b.created_at);
 }
 
-export default function WeekView({ weekStart, tasks, categoryMap, onSelectTask, onCreateAt }) {
+function urgency(task) {
+  if (task.status === 'done') return 'done';
+  if (!task.deadline) return 'open';
+  const hours = (new Date(task.deadline) - new Date()) / (1000 * 60 * 60);
+  if (hours < 0) return 'overdue';
+  if (hours <= 24) return 'urgent';
+  if (hours <= 72) return 'soon';
+  return 'open';
+}
+
+export default function WeekView({ weekStart, tasks, onSelectTask, onCreateAt }) {
   const buckets = useMemo(() => bucketByDay(tasks, weekStart), [tasks, weekStart]);
   const today = startOfDay(new Date());
 
   return (
-    <div className="week">
-      <div className="week-head">
-        <div />
-        {DAY_NAMES.map((name, i) => {
-          const d = addDays(weekStart, i);
-          const isToday = sameDay(d, today);
-          return (
-            <div key={i} className={`day ${isToday ? 'today' : ''}`}>
-              <div className="num">{d.getDate()}</div>
-              <div className="name">{name}</div>
-            </div>
-          );
-        })}
-      </div>
+    <div className="week-board">
+      {DAY_NAMES.map((name, i) => {
+        const d = addDays(weekStart, i);
+        const isToday = sameDay(d, today);
+        return (
+          <section
+            key={name}
+            className={`week-day ${isToday ? 'today' : ''}`}
+            onDoubleClick={() => onCreateAt?.(d)}
+          >
+            <header className="week-day-head">
+              <div>
+                <strong>{d.getDate()}</strong>
+                <span>{name}</span>
+              </div>
+              <em>{buckets[i].length}</em>
+            </header>
 
-      <div className="week-grid">
-        <div className="gutter">
-          {HOURS.map((h) => (
-            <div key={h} className="h-slot">
-              {h === 12 ? '12 pm' : h > 12 ? `${h - 12} pm` : `${h} am`}
-            </div>
-          ))}
-        </div>
-
-        {DAY_NAMES.map((_, dayIdx) => (
-          <div key={dayIdx} className="day-col">
-            {HOURS.map((h) => (
-              <div
-                key={h}
-                className="h-slot"
-                onDoubleClick={() => {
-                  const d = addDays(weekStart, dayIdx);
-                  d.setHours(h, 0, 0, 0);
-                  onCreateAt?.(d);
-                }}
-              />
-            ))}
-
-            {buckets[dayIdx].map((t) => {
-              const { top, height } = positionFor(t);
-              const color = (t.category_id && categoryMap[t.category_id]?.color) || null;
-              const style = color
-                ? {
-                    top,
-                    height,
-                    background: hexToSoft(color),
-                    borderColor: hexToLine(color),
-                    borderLeftColor: color,
-                  }
-                : { top, height };
-              return (
-                <div
-                  key={t.id}
-                  className={`event priority-${t.priority} ${t.status === 'done' ? 'done' : ''}`}
-                  style={style}
-                  onClick={() => onSelectTask?.(t)}
-                  title={t.title}
+            <div className="week-day-list">
+              {buckets[i].map((task) => (
+                <button
+                  key={task.id}
+                  type="button"
+                  className={`deadline-card priority-${task.priority} urgency-${urgency(task)}`}
+                  onClick={() => onSelectTask?.(task)}
                 >
-                  <div className="title">{t.title}</div>
-                  {t.category_id && categoryMap[t.category_id] && (
-                    <div className="meta">{categoryMap[t.category_id].name}</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+                  <span className="deadline-title">{task.title}</span>
+                  <span className="deadline-meta">
+                    {task.deadline ? fmtTime(new Date(task.deadline)) : 'no time'}
+                    {' · '}
+                    {task.status.replace('_', ' ')}
+                  </span>
+                </button>
+              ))}
+              {buckets[i].length === 0 && (
+                <button type="button" className="deadline-empty" onClick={() => onCreateAt?.(d)}>
+                  Add task
+                </button>
+              )}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
-}
-
-function hexToSoft(hex) {
-  const { r, g, b } = parseHex(hex);
-  return `rgba(${r}, ${g}, ${b}, 0.14)`;
-}
-function hexToLine(hex) {
-  const { r, g, b } = parseHex(hex);
-  return `rgba(${r}, ${g}, ${b}, 0.38)`;
-}
-function parseHex(hex) {
-  const h = hex.replace('#', '');
-  return {
-    r: parseInt(h.slice(0, 2), 16),
-    g: parseInt(h.slice(2, 4), 16),
-    b: parseInt(h.slice(4, 6), 16),
-  };
 }
