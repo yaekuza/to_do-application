@@ -38,11 +38,9 @@ function urgencyLabel(task) {
 
 export default function CalendarPage() {
   const [selected, setSelected] = useState(startOfDay(new Date()));
-  const [month, setMonth] = useState(new Date(selected.getFullYear(), selected.getMonth(), 1));
   const weekStart = useMemo(() => startOfWeek(selected), [selected]);
 
   const [tasks, setTasks] = useState([]);
-  const [monthTasks, setMonthTasks] = useState([]);
 
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_TASK);
@@ -52,15 +50,9 @@ export default function CalendarPage() {
   const load = useCallback(async () => {
     const from = weekStart.toISOString();
     const to = addDays(weekStart, 7).toISOString();
-    const monthStart = startOfWeek(new Date(month.getFullYear(), month.getMonth(), 1));
-    const monthEnd = addDays(monthStart, 42);
-    const [t, m] = await Promise.all([
-      api.tasks.list({ from, to }),
-      api.tasks.list({ from: monthStart.toISOString(), to: monthEnd.toISOString() }),
-    ]);
+    const t = await api.tasks.list({ from, to });
     setTasks(t ?? []);
-    setMonthTasks(m ?? []);
-  }, [month, weekStart]);
+  }, [weekStart]);
 
   useEffect(() => {
     load().catch(console.error);
@@ -123,13 +115,7 @@ export default function CalendarPage() {
   return (
     <div className="calendar-page">
       <aside className="calendar-aside">
-        <MiniCalendar
-          month={month}
-          onMonthChange={setMonth}
-          selected={selected}
-          onSelect={setSelected}
-          tasks={monthTasks}
-        />
+        <MiniCalendar />
 
         <div className="aside-section">
           <h4>Week load</h4>

@@ -1,15 +1,16 @@
 :root {
-  --bg:           #2d2d2d;
-  --surface:      #34302f;
-  --surface-2:    #3b3635;
-  --surface-3:    #463f3d;
-  --border:       #554845;
-  --border-strong: #6f5852;
+  /* Four-color base: black, white, coral, slate. Shades below are derived from those. */
+  --bg:           #000000;
+  --surface:      #0d0f12;
+  --surface-2:    #15181d;
+  --surface-3:    #20242b;
+  --border:       #2c323b;
+  --border-strong: #4a5564;
 
-  --text:        #f37864;
-  --text-dim:    #d98b7d;
-  --text-mute:   #9d7068;
-  --text-soft:   #f6d7d1;
+  --text:        #ffffff;
+  --text-dim:    #d6dbe3;
+  --text-mute:   #8a94a6;
+  --text-soft:   #f4f6f8;
 
   --accent:        #f37864;
   --accent-hover:  #ff8d7a;
@@ -17,13 +18,13 @@
   --accent-soft:   rgba(243, 120, 100, 0.13);
   --accent-line:   rgba(243, 120, 100, 0.34);
 
-  --success: #f6d7d1;
+  --success: #f4f6f8;
   --warn:    #ffad9e;
   --danger:  #f37864;
 
-  --radius-sm: 6px;
-  --radius:    10px;
-  --radius-lg: 14px;
+  --radius-sm: 2px;
+  --radius:    3px;
+  --radius-lg: 4px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -34,8 +35,8 @@
   --space-7: 32px;
   --space-8: 48px;
 
-  --font-sans: 'DM Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 
-  --shadow-modal: 0 12px 40px rgba(45, 45, 45, 0.50);
+  --shadow-modal: 0 12px 40px rgba(0, 0, 0, 0.62);
 }

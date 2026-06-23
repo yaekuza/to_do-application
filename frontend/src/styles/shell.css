@@ -17,7 +17,9 @@
   flex-direction: column;
   padding: var(--space-5) var(--space-4);
   gap: 2px;
-  overflow: auto;
+  overflow: visible;
+  position: relative;
+  z-index: 50;
 }
 .rail-toggle {
   display: flex;
@@ -98,7 +100,7 @@
   opacity: 0;
   transform: translateX(-6px);
   pointer-events: none;
-  z-index: 80;
+  z-index: 500;
   transition: opacity 160ms ease, transform 160ms ease;
 }
 .rail-profile-popout strong {
@@ -218,7 +220,7 @@
   place-items: center;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
   transition: color 120ms, border-color 120ms, background 120ms;
 }

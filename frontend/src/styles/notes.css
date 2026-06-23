@@ -11,7 +11,7 @@
   margin-bottom: var(--space-5);
 }
 .notes-header h1 {
-  font-family: 'Space Grotesk', var(--font-display);
+  font-family: var(--font-display);
   font-size: 22px;
   font-weight: 700;
   margin: 0;
@@ -96,7 +96,7 @@
 .note-editor-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(45, 45, 45, 0.72);
+  background: rgba(0, 0, 0, 0.78);
   z-index: 500;
   display: grid;
   place-items: center;
@@ -120,7 +120,7 @@
 .note-editor-title {
   font-size: 18px;
   font-weight: 600;
-  font-family: 'Space Grotesk', var(--font-display);
+  font-family: var(--font-display);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border);

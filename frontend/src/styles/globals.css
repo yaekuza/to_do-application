@@ -51,6 +51,30 @@ select {
   color: var(--text);
 }
 
+* {
+  scrollbar-color: var(--accent) var(--surface-2);
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border: 2px solid var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
+*::-webkit-scrollbar-corner {
+  background: var(--surface-2);
+}
+
 .boot {
   display: grid;
   place-items: center;

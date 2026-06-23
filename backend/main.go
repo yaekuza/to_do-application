@@ -19,6 +19,7 @@ import (
 )
 
 func main() {
+	// Load local environment variables during development; production can provide real env vars.
 	_ = godotenv.Load()
 
 	cfg, err := config.Load()
@@ -33,11 +34,13 @@ func main() {
 	defer pool.Close()
 
 	mux := http.NewServeMux()
+	// Health endpoint is useful for deployment checks and quick local testing.
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
 
+	// API routes are registered on their own mux so auth can wrap all /api requests at once.
 	api := http.NewServeMux()
 	handlers.RegisterProfile(api, pool)
 	handlers.RegisterCategories(api, pool)
@@ -49,6 +52,7 @@ func main() {
 
 	handler := middleware.CORS(cfg.FrontendOrigin, mux)
 
+	// ReadHeaderTimeout prevents slow-client connections from hanging forever.
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
 		Handler:           handler,
@@ -62,6 +66,7 @@ func main() {
 		}
 	}()
 
+	// Wait for Ctrl+C or a server stop signal, then shut down gracefully.
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop

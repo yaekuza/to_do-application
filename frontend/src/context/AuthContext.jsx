@@ -10,12 +10,14 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true;
 
+    // Restore an existing login after refresh so protected pages do not flash open.
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session);
       setLoading(false);
     });
 
+    // Keep React state synced when Supabase logs in, signs out, or refreshes a token.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
     });

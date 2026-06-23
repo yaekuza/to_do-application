@@ -39,7 +39,10 @@ export default function NotesPage() {
 
   async function handleSave(e) {
     e?.preventDefault();
-    if (!form.title.trim()) return;
+    if (!form.title.trim()) {
+      setError('Give the note a title before saving.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -124,7 +127,7 @@ export default function NotesPage() {
       </div>
 
       {selected && (
-        <div className="note-editor-overlay" onPointerDown={() => setSelected(null)}>
+        <div className="note-editor-overlay" onClick={() => setSelected(null)}>
           <form
             className="note-editor"
             onSubmit={handleSave}
@@ -161,7 +164,12 @@ export default function NotesPage() {
               )}
               <div style={{ flex: 1 }} />
               <button type="button" className="btn-ghost" onClick={() => setSelected(null)}>Cancel</button>
-              <button type="submit" className="btn-accent" disabled={saving || !form.title.trim()}>
+              <button
+                type="button"
+                className="btn-accent note-save-btn"
+                disabled={saving}
+                onClick={handleSave}
+              >
                 {saving ? 'Saving...' : 'Save'}
               </button>
             </div>

@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js';
 
 async function currentUserId() {
+  // Every database write is tied to the signed-in Supabase user.
   const { data, error } = await supabase.auth.getUser();
   if (error) throw error;
   const id = data.user?.id;
@@ -9,6 +10,7 @@ async function currentUserId() {
 }
 
 function unwrap(result) {
+  // Supabase returns { data, error }; this keeps page code smaller.
   if (result.error) throw result.error;
   return result.data;
 }
@@ -18,6 +20,7 @@ function normalizeText(value) {
 }
 
 function inRange(row, range) {
+  // Calendar views pass date ranges; the API keeps filtering logic in one place.
   if (!range?.from && !range?.to) return true;
   const ref = row.deadline || row.start_time || row.created_at;
   if (!ref) return true;
@@ -39,6 +42,7 @@ export const api = {
       if (existing.error) throw existing.error;
       if (existing.data) return existing.data;
 
+      // Older accounts may not have a profile row yet, so create one lazily.
       return unwrap(
         await supabase
           .from('profiles')
@@ -58,6 +62,7 @@ export const api = {
       if (existing.error) throw existing.error;
       const current = existing.data ?? {};
 
+      // Upsert lets the same call create or update the user's profile row.
       return unwrap(
         await supabase
           .from('profiles')
@@ -66,7 +71,13 @@ export const api = {
             username: normalizeText(patch.username ?? current.username) || null,
             display_name: normalizeText(patch.display_name ?? current.display_name) || null,
             avatar_url: patch.avatar_url ?? current.avatar_url ?? null,
+            banner_url: patch.banner_url ?? current.banner_url ?? null,
             bio: patch.bio ?? current.bio ?? null,
+            age: patch.age === '' || patch.age === undefined ? current.age ?? null : Number(patch.age) || null,
+            birthplace: normalizeText(patch.birthplace ?? current.birthplace) || null,
+            school: normalizeText(patch.school ?? current.school) || null,
+            study_program: normalizeText(patch.study_program ?? current.study_program) || null,
+            study_year: normalizeText(patch.study_year ?? current.study_year) || null,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'id' })
           .select()
