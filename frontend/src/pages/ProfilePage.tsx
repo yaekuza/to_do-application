@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import gsap from 'gsap';
 import {
   Area,
@@ -9,9 +10,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useAuth } from '../context/AuthContext.jsx';
-import { api } from '../lib/api.js';
-import { loadPreferences } from '../lib/preferences.js';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
+import { loadPreferences } from '../lib/preferences';
 
 const DAY = 24 * 60 * 60 * 1000;
 const PROFILE_PANEL_ORDER_KEY = 'takenhandelaar-profile-panel-order';
@@ -133,7 +134,7 @@ export default function ProfilePage() {
   const profileStyle = useMemo(() => ({
     '--profile-banner-primary': bannerPalette.primary,
     '--profile-banner-secondary': bannerPalette.secondary,
-  }), [bannerPalette]);
+  }) as CSSProperties & Record<string, string>, [bannerPalette]);
 
   useEffect(() => {
     if (!bannerUrl) {
@@ -477,7 +478,7 @@ function DraggablePanel({
   movePanel,
   registerPanel,
   ...props
-}) {
+}: any) {
   const isDragging = draggingPanel === id;
   const panelRef = useRef(null);
   const lastHoverTarget = useRef('');
@@ -515,7 +516,7 @@ function DraggablePanel({
       gsap.set(node, { x: currentX, y: currentY, zIndex: 40 });
 
       node.style.pointerEvents = 'none';
-      const target = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY)?.closest?.('.profile-draggable');
+      const target = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY)?.closest?.('.profile-draggable') as HTMLElement | null;
       node.style.pointerEvents = '';
       const targetId = target?.dataset?.panelId || '';
 
@@ -625,17 +626,18 @@ function GitHubActivity({ activity }) {
   );
 }
 
-function createCropperState(file, type) {
+function createCropperState(file, type): Promise<any> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('Could not read image file'));
     reader.onload = () => {
+      const src = typeof reader.result === 'string' ? reader.result : '';
       const img = new Image();
       img.onerror = () => reject(new Error('Could not load image'));
       img.onload = () => {
         resolve({
           type,
-          src: reader.result,
+          src,
           image: img,
           x: 0,
           y: 0,
@@ -645,7 +647,7 @@ function createCropperState(file, type) {
           quality: type === 'avatar' ? 0.82 : 0.82,
         });
       };
-      img.src = reader.result;
+      img.src = src;
     };
     reader.readAsDataURL(file);
   });
@@ -684,7 +686,12 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function extractBannerPalette(src) {
+type BannerPalette = {
+  primary: string;
+  secondary: string;
+};
+
+function extractBannerPalette(src): Promise<BannerPalette> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';

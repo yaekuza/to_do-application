@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-import { useAuth } from '../context/AuthContext.jsx';
-import { api } from '../lib/api.js';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 
 const DashboardIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">

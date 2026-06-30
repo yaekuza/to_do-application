@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { addDays, fmtTime, sameDay, startOfDay } from '../../lib/date.js';
+import { addDays, fmtTime, sameDay, startOfDay } from '../../lib/date';
 
 const DAY_NAMES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -26,7 +26,7 @@ function compareUrgency(a, b) {
   // Unfinished tasks stay above completed ones, then sort by closest deadline.
   if (a.status === 'done' && b.status !== 'done') return 1;
   if (a.status !== 'done' && b.status === 'done') return -1;
-  return new Date(a.deadline || a.created_at) - new Date(b.deadline || b.created_at);
+  return new Date(a.deadline || a.created_at).getTime() - new Date(b.deadline || b.created_at).getTime();
 }
 
 function positionFor(task) {
@@ -40,7 +40,7 @@ function urgency(task) {
   // CSS classes use this to color overdue/urgent/soon tasks differently.
   if (task.status === 'done') return 'done';
   if (!task.deadline) return 'open';
-  const hours = (new Date(task.deadline) - new Date()) / (1000 * 60 * 60);
+  const hours = (new Date(task.deadline).getTime() - Date.now()) / (1000 * 60 * 60);
   if (hours < 0) return 'overdue';
   if (hours <= 24) return 'urgent';
   if (hours <= 72) return 'soon';

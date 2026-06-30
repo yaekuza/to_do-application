@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-import { api } from '../lib/api.js';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -57,11 +57,11 @@ export default function DashboardPage() {
       .sort((a, b) => {
         const da = new Date(a.deadline || a.start_time);
         const db = new Date(b.deadline || b.start_time);
-        return da - db;
+        return da.getTime() - db.getTime();
       });
     const dueToday = unfinished.filter((t) => t.deadline && sameDay(new Date(t.deadline), now));
     const highPriority = unfinished.filter((t) => t.priority === 'high')
-      .sort((a, b) => new Date(a.deadline || a.created_at) - new Date(b.deadline || b.created_at));
+      .sort((a, b) => new Date(a.deadline || a.created_at).getTime() - new Date(b.deadline || b.created_at).getTime());
     const completionRate = tasks.length ? Math.round((done.length / tasks.length) * 100) : 0;
     return {
       total: tasks.length,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-import { DEFAULT_PREFERENCES, loadPreferences, savePreferences } from '../lib/preferences.js';
+import { useAuth } from '../context/AuthContext';
+import { DEFAULT_PREFERENCES, loadPreferences, savePreferences } from '../lib/preferences';
 
 const GearIcon = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">

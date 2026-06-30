@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import MiniCalendar from '../components/calendar/MiniCalendar.jsx';
-import WeekView from '../components/calendar/WeekView.jsx';
-import Modal from '../components/Modal.jsx';
-import { api } from '../lib/api.js';
+import MiniCalendar from '../components/calendar/MiniCalendar';
+import WeekView from '../components/calendar/WeekView';
+import Modal from '../components/Modal';
+import { api } from '../lib/api';
 import {
   addDays,
   fmtWeekRange,
@@ -10,7 +10,7 @@ import {
   localToISO,
   startOfDay,
   startOfWeek,
-} from '../lib/date.js';
+} from '../lib/date';
 
 const EMPTY_TASK = {
   title: '',
@@ -23,13 +23,13 @@ const EMPTY_TASK = {
 function compareUrgency(a, b) {
   if (a.status === 'done' && b.status !== 'done') return 1;
   if (a.status !== 'done' && b.status === 'done') return -1;
-  return new Date(a.deadline || a.created_at) - new Date(b.deadline || b.created_at);
+  return new Date(a.deadline || a.created_at).getTime() - new Date(b.deadline || b.created_at).getTime();
 }
 
 function urgencyLabel(task) {
   if (task.status === 'done') return 'done';
   if (!task.deadline) return 'open';
-  const hours = (new Date(task.deadline) - new Date()) / (1000 * 60 * 60);
+  const hours = (new Date(task.deadline).getTime() - Date.now()) / (1000 * 60 * 60);
   if (hours < 0) return 'overdue';
   if (hours <= 24) return 'urgent';
   if (hours <= 72) return 'soon';

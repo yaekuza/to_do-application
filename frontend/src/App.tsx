@@ -1,13 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Auth from './pages/Auth.jsx';
-import AuthCallback from './pages/AuthCallback.jsx';
-import DashboardPage from './pages/DashboardPage.jsx';
-import CalendarPage from './pages/CalendarPage.jsx';
-import NotesPage from './pages/NotesPage.jsx';
-import SettingsPage from './pages/SettingsPage.jsx';
-import ProfilePage from './pages/ProfilePage.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
-import AppShell from './components/AppShell.jsx';
+import Auth from './pages/Auth';
+import AuthCallback from './pages/AuthCallback';
+import DashboardPage from './pages/DashboardPage';
+import CalendarPage from './pages/CalendarPage';
+import NotesPage from './pages/NotesPage';
+import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
+import ProtectedRoute from './components/ProtectedRoute';
+import AppShell from './components/AppShell';
 
 export default function App() {
   return (

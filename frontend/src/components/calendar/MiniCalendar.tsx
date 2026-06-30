@@ -5,7 +5,7 @@ import {
   sameDay,
   startOfDay,
   startOfWeek,
-} from '../../lib/date.js';
+} from '../../lib/date';
 
 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 

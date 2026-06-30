@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-import { supabaseConfig } from '../lib/supabase.js';
+import { useAuth } from '../context/AuthContext';
+import { supabaseConfig } from '../lib/supabase';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
