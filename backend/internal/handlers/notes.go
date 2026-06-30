@@ -9,9 +9,11 @@ import (
 	"github.com/yaekuza/takenhandelaar/backend/internal/models"
 )
 
+// RegisterNotes adds CRUD routes for notes shown on the notes page.
 func RegisterNotes(mux *http.ServeMux, pool *pgxpool.Pool) {
 	mux.HandleFunc("GET /notes", func(w http.ResponseWriter, r *http.Request) {
 		uid := middleware.UserID(r.Context())
+		// Pinned notes appear first, then the newest edited notes.
 		rows, err := pool.Query(r.Context(),
 			`select id, user_id, category_id, title, body, pinned, created_at, updated_at
 			 from notes where user_id = $1
@@ -47,6 +49,7 @@ func RegisterNotes(mux *http.ServeMux, pool *pgxpool.Pool) {
 			http.Error(w, "title is required", http.StatusBadRequest)
 			return
 		}
+		// user_id is taken from auth context so the client cannot fake ownership.
 		var n models.Note
 		err := pool.QueryRow(r.Context(),
 			`insert into notes (user_id, category_id, title, body, pinned)
@@ -76,6 +79,7 @@ func RegisterNotes(mux *http.ServeMux, pool *pgxpool.Pool) {
 			return
 		}
 		var n models.Note
+		// Update the timestamp so sorting by recently edited notes stays correct.
 		err := pool.QueryRow(r.Context(),
 			`update notes set
 				category_id = $3,
@@ -98,6 +102,7 @@ func RegisterNotes(mux *http.ServeMux, pool *pgxpool.Pool) {
 	mux.HandleFunc("DELETE /notes/{id}", func(w http.ResponseWriter, r *http.Request) {
 		uid := middleware.UserID(r.Context())
 		id := r.PathValue("id")
+		// The user_id condition is the backend's ownership check.
 		ct, err := pool.Exec(r.Context(),
 			`delete from notes where id = $1 and user_id = $2`, id, uid)
 		if err != nil {

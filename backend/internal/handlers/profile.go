@@ -9,10 +9,12 @@ import (
 	"github.com/yaekuza/takenhandelaar/backend/internal/models"
 )
 
+// RegisterProfile adds routes for reading and updating the current user's profile.
 func RegisterProfile(mux *http.ServeMux, pool *pgxpool.Pool) {
 	mux.HandleFunc("GET /profile", func(w http.ResponseWriter, r *http.Request) {
 		uid := middleware.UserID(r.Context())
 		var p models.Profile
+		// Create a blank profile row for new users so the profile page always has data.
 		err := pool.QueryRow(r.Context(),
 			`insert into profiles (id) values ($1)
 			 on conflict (id) do nothing;`, uid,
@@ -43,6 +45,7 @@ func RegisterProfile(mux *http.ServeMux, pool *pgxpool.Pool) {
 			return
 		}
 		var p models.Profile
+		// Upsert means the same route can create or update a profile safely.
 		err := pool.QueryRow(r.Context(),
 			`insert into profiles (id, username, display_name, avatar_url, bio)
 			 values ($1, $2, $3, $4, $5)

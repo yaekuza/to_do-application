@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// writeJSON sends a JSON response with the correct content type and status.
 func writeJSON(w http.ResponseWriter, status int, body any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -13,6 +14,7 @@ func writeJSON(w http.ResponseWriter, status int, body any) {
 	}
 }
 
+// decodeJSON reads a request body into a Go struct and rejects unknown fields.
 func decodeJSON(r *http.Request, dst any) error {
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()

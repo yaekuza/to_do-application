@@ -12,6 +12,8 @@ type Config struct {
 	Port           string
 }
 
+// Load reads the backend settings from environment variables.
+// This keeps secrets like the database URL and JWT secret out of the code.
 func Load() (*Config, error) {
 	cfg := &Config{
 		DatabaseURL:    os.Getenv("DATABASE_URL"),
@@ -25,6 +27,7 @@ func Load() (*Config, error) {
 	if cfg.JWTSecret == "" {
 		return nil, errors.New("SUPABASE_JWT_SECRET is required")
 	}
+	// Local defaults make development easier when these env vars are not set.
 	if cfg.FrontendOrigin == "" {
 		cfg.FrontendOrigin = "http://localhost:5173"
 	}

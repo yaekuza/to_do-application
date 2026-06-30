@@ -22,6 +22,7 @@ func UserID(ctx context.Context) string {
 // RequireAuth parses and verifies a Supabase HS256 JWT from the Authorization header.
 func RequireAuth(secret string, next http.Handler) http.Handler {
 	keyFn := func(t *jwt.Token) (any, error) {
+		// Supabase signs these tokens with HMAC; reject anything unexpected.
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
@@ -36,6 +37,7 @@ func RequireAuth(secret string, next http.Handler) http.Handler {
 		}
 		raw := strings.TrimPrefix(header, "Bearer ")
 
+		// Parse the token and verify it with the Supabase JWT secret.
 		claims := jwt.MapClaims{}
 		token, err := jwt.ParseWithClaims(raw, claims, keyFn)
 		if err != nil || !token.Valid {
@@ -49,6 +51,7 @@ func RequireAuth(secret string, next http.Handler) http.Handler {
 			return
 		}
 
+		// Store the user id in the request context so handlers can filter data.
 		ctx := context.WithValue(r.Context(), userIDKey, sub)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

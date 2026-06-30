@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// Profile is the public user information shown on the profile page.
 type Profile struct {
 	ID          string    `json:"id"`
 	Username    *string   `json:"username"`
@@ -12,6 +13,7 @@ type Profile struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+// Category groups tasks/notes for one signed-in user.
 type Category struct {
 	ID        string    `json:"id"`
 	UserID    string    `json:"user_id"`
@@ -20,6 +22,7 @@ type Category struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// Task is the main planning item in the calendar and dashboard.
 type Task struct {
 	ID          string     `json:"id"`
 	UserID      string     `json:"user_id"`
@@ -34,6 +37,7 @@ type Task struct {
 	CreatedAt   time.Time  `json:"created_at"`
 }
 
+// Note stores extra study notes or reminders for the user.
 type Note struct {
 	ID         string    `json:"id"`
 	UserID     string    `json:"user_id"`

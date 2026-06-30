@@ -10,10 +10,12 @@ import (
 	"github.com/yaekuza/takenhandelaar/backend/internal/models"
 )
 
+// RegisterTasks adds CRUD routes for the student's planned tasks.
 func RegisterTasks(mux *http.ServeMux, pool *pgxpool.Pool) {
 	mux.HandleFunc("GET /tasks", func(w http.ResponseWriter, r *http.Request) {
 		uid := middleware.UserID(r.Context())
 
+		// Optional from/to query parameters let the calendar request one week at a time.
 		var (
 			from, to *time.Time
 		)
@@ -30,6 +32,7 @@ func RegisterTasks(mux *http.ServeMux, pool *pgxpool.Pool) {
 			}
 		}
 
+		// coalesce chooses the best date to filter/order by: start time, deadline, or created date.
 		rows, err := pool.Query(r.Context(),
 			`select id, user_id, category_id, title, description,
 				start_time, end_time, deadline, priority, status, created_at
@@ -81,6 +84,7 @@ func RegisterTasks(mux *http.ServeMux, pool *pgxpool.Pool) {
 			in.Status = "open"
 		}
 
+		// The authenticated user id comes from the JWT, not from the browser body.
 		var t models.Task
 		err := pool.QueryRow(r.Context(),
 			`insert into tasks (user_id, category_id, title, description, start_time, end_time, deadline, priority, status)
@@ -116,6 +120,7 @@ func RegisterTasks(mux *http.ServeMux, pool *pgxpool.Pool) {
 			return
 		}
 		var t models.Task
+		// coalesce keeps old values when optional fields are not included in the request.
 		err := pool.QueryRow(r.Context(),
 			`update tasks set
 				category_id = $3,
@@ -143,6 +148,7 @@ func RegisterTasks(mux *http.ServeMux, pool *pgxpool.Pool) {
 	mux.HandleFunc("DELETE /tasks/{id}", func(w http.ResponseWriter, r *http.Request) {
 		uid := middleware.UserID(r.Context())
 		id := r.PathValue("id")
+		// Delete only succeeds when the task belongs to the logged-in user.
 		ct, err := pool.Exec(r.Context(),
 			`delete from tasks where id = $1 and user_id = $2`, id, uid)
 		if err != nil {

@@ -22,11 +22,13 @@ func main() {
 	// Load local environment variables during development; production can provide real env vars.
 	_ = godotenv.Load()
 
+	// Read required settings before starting the server.
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}
 
+	// Open one shared database pool that all route handlers reuse.
 	pool, err := db.Connect(context.Background(), cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("db: %v", err)
@@ -47,9 +49,11 @@ func main() {
 	handlers.RegisterTasks(api, pool)
 	handlers.RegisterNotes(api, pool)
 
+	// Every /api route needs a valid Supabase token before it reaches handlers.
 	authed := middleware.RequireAuth(cfg.JWTSecret, api)
 	mux.Handle("/api/", http.StripPrefix("/api", authed))
 
+	// CORS lets the browser-based React app call the Go API.
 	handler := middleware.CORS(cfg.FrontendOrigin, mux)
 
 	// ReadHeaderTimeout prevents slow-client connections from hanging forever.
@@ -59,6 +63,7 @@ func main() {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
+	// Run the server in a goroutine so main can keep listening for shutdown signals.
 	go func() {
 		log.Printf("listening on :%s (cors origin %s)", cfg.Port, cfg.FrontendOrigin)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -73,6 +78,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	// Give active requests a short window to finish before the process exits.
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Printf("shutdown: %v", err)
 	}

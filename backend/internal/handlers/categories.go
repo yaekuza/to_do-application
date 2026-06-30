@@ -9,9 +9,11 @@ import (
 	"github.com/yaekuza/takenhandelaar/backend/internal/models"
 )
 
+// RegisterCategories adds CRUD routes for category data.
 func RegisterCategories(mux *http.ServeMux, pool *pgxpool.Pool) {
 	mux.HandleFunc("GET /categories", func(w http.ResponseWriter, r *http.Request) {
 		uid := middleware.UserID(r.Context())
+		// The user_id filter prevents users from seeing each other's categories.
 		rows, err := pool.Query(r.Context(),
 			`select id, user_id, name, color, created_at
 			 from categories where user_id = $1 order by name`, uid)
@@ -46,6 +48,7 @@ func RegisterCategories(mux *http.ServeMux, pool *pgxpool.Pool) {
 		if in.Color == "" {
 			in.Color = "#a855f7"
 		}
+		// New categories are always tied to the authenticated user.
 		var c models.Category
 		err := pool.QueryRow(r.Context(),
 			`insert into categories (user_id, name, color)
@@ -72,6 +75,7 @@ func RegisterCategories(mux *http.ServeMux, pool *pgxpool.Pool) {
 			return
 		}
 		var c models.Category
+		// The WHERE clause checks both id and user_id, so a user cannot edit someone else's category.
 		err := pool.QueryRow(r.Context(),
 			`update categories set
 				name  = coalesce($3, name),
@@ -90,6 +94,7 @@ func RegisterCategories(mux *http.ServeMux, pool *pgxpool.Pool) {
 	mux.HandleFunc("DELETE /categories/{id}", func(w http.ResponseWriter, r *http.Request) {
 		uid := middleware.UserID(r.Context())
 		id := r.PathValue("id")
+		// RowsAffected tells us whether the category existed for this user.
 		ct, err := pool.Exec(r.Context(),
 			`delete from categories where id = $1 and user_id = $2`, id, uid)
 		if err != nil {
